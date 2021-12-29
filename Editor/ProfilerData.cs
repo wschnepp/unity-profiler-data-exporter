@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
+using UnityEditor.Profiling;
 using UnityEditorInternal;
 #if !UNITY_2019_1_OR_NEWER
 using UnityEditorInternal.Profiling;
 #endif
 using UnityEngine;
+using static UnityEditor.Profiling.FrameDataView;
 
 namespace ProfilerDataExporter
 {
@@ -13,49 +16,53 @@ namespace ProfilerDataExporter
     {
         public List<FrameData> frames = new List<FrameData>(300);
 
+        public string format;
+
+        private string ToCsv()
+        {
+
+            StringBuilder builder = new StringBuilder(1024*1024);
+            builder.Append("Frame;CPU;GPU; PluginRenderTime\n");
+            for (int fid = 0; fid < frames.Count; fid++)
+            {
+                var frame = frames[fid];
+
+                builder.Append($"{fid};{frame.frameTimeCPU};{frame.frameTimeGPU};\n");
+            }
+            return builder.ToString();
+        }
+
         public override string ToString()
         {
-            return JsonUtility.ToJson(this);
+            if (format == "csv")
+            {
+                return ToCsv();
+            }
+            else
+            {
+                return JsonUtility.ToJson(this);
+            }
         }
 
         private static IAllocator<ProfilerData> profilerDataAllocator = new ObjectPool<ProfilerData>(new BaseFactory<ProfilerData>(), 1);
-        private static ProfilerProperty profilerProperty = new ProfilerProperty();
 
         public static ProfilerData GetProfilerData(int firstFrameIndex, int lastFrameIndex, string selectedPropertyPath = "")
         {
-            //using (Profiler.AddSample(Profiler.SamplerType.GetProfilerData))
             {
-                var profilerSortColumn = ProfilerColumn.TotalTime;
-                var viewType = ProfilerViewType.Hierarchy;
-                profilerProperty.Cleanup();
-
                 var profilerData = profilerDataAllocator.Allocate();
                 for (int frameIndex = firstFrameIndex; frameIndex <= lastFrameIndex; ++frameIndex)
                 {
-#if UNITY_2019_1_OR_NEWER
-                    profilerProperty.SetRoot(frameIndex, (int)profilerSortColumn, (int)viewType);
-#else
-                    profilerProperty.SetRoot(frameIndex, profilerSortColumn, viewType);
-#endif
-                    profilerProperty.onlyShowGPUSamples = false;
+                    RawFrameDataView view = ProfilerDriver.GetRawFrameDataView(frameIndex, 1);
+                    var sampleCount = view.sampleCount;
 
                     var frameData = FrameData.Create();
-                    const bool enterChildren = true;
-                    while (profilerProperty.Next(enterChildren))
-                    {
-                        bool shouldSaveProperty = string.IsNullOrEmpty(selectedPropertyPath) || profilerProperty.propertyPath == selectedPropertyPath;
-                        if (shouldSaveProperty)
-                        {
-                            var functionData = FunctionData.Create(profilerProperty);
-                            frameData.functions.Add(functionData);
-                            //Debug.Log(functionData.ToString());
-                        }
-                    }
-                    profilerProperty.Cleanup();
+
+                    frameData.frameTimeCPU = view.frameTimeMs;
+                    frameData.frameTimeGPU = view.frameGpuTimeMs;
+                    view.Dispose();
+
                     profilerData.frames.Add(frameData);
-                    //Debug.Log(frameData.ToString());
                 }
-                //Debug.Log(profilerData.ToString());
                 return profilerData;
             }
         }
@@ -75,6 +82,8 @@ namespace ProfilerDataExporter
     public class FrameData
     {
         public List<FunctionData> functions = new List<FunctionData>(50);
+        public float frameTimeCPU;
+        public float frameTimeGPU;
 
         private static IAllocator<FrameData> frameDataAllocator = new ObjectPool<FrameData>(new BaseFactory<FrameData>(), 300);
 
