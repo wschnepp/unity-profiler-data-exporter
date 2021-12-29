@@ -111,7 +111,7 @@ namespace ProfilerDataExporter
 
             scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
 
-            DrawStats();
+            //DrawStats();
             DrawFilePath();
             DrawExportButtons();
 
