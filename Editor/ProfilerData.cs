@@ -9,6 +9,8 @@ using UnityEditorInternal.Profiling;
 using UnityEngine;
 using static UnityEditor.Profiling.FrameDataView;
 
+//NOTICE: File has been modified by Wilhelm Schnepp (2021-12-29)
+
 namespace ProfilerDataExporter
 {
     [Serializable]

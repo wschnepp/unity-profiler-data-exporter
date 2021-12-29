@@ -3,6 +3,8 @@ using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
+//NOTICE: File has been modified by Wilhelm Schnepp (2021-12-29)
+
 namespace ProfilerDataExporter
 {
     /// <summary>

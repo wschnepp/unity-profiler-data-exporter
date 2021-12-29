@@ -10,6 +10,8 @@ using System.Reflection;
 using System.IO;
 using System.Diagnostics;
 
+//NOTICE: File has been modified by Wilhelm Schnepp (2021-12-29)
+
 namespace ProfilerDataExporter
 {
 #if UNITY_2019_1_OR_NEWER
