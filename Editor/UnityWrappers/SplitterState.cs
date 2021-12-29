@@ -12,7 +12,7 @@ namespace ProfilerDataExporter
     {
         private static readonly Type SplitterStateType = typeof(Editor).Assembly.GetType("UnityEditor.SplitterState");
         public object splitter = null;
-        public int[] realSizes;
+        public float[] realSizes;
 
         private static readonly FieldInfo RealSizesInfo = SplitterStateType.GetField(
             "realSizes",
@@ -28,13 +28,14 @@ namespace ProfilerDataExporter
             BindingFlags.DeclaredOnly |
             BindingFlags.Public | BindingFlags.NonPublic |
             BindingFlags.Instance | BindingFlags.CreateInstance, null, null, new object[] { relativeSizes, minSizes, maxSizes });
-            realSizes = (int[])RealSizesInfo.GetValue(splitter);
+            object t = RealSizesInfo.GetValue(splitter); ;
+            realSizes = (float[])t;
         }
 
         public SplitterState(object splitter)
         {
             this.splitter = splitter;
-            realSizes = (int[])RealSizesInfo.GetValue(splitter);
+            realSizes = (float[])RealSizesInfo.GetValue(splitter);
         }
 
         public int ID
@@ -65,14 +66,15 @@ namespace ProfilerDataExporter
                     BindingFlags.Instance | BindingFlags.GetField, null, splitter, null);
             }
         }
-        public int splitSize
+        public float splitSize
         {
             get
             {
-                return (int)SplitterStateType.InvokeMember("splitSize",
+                var f = SplitterStateType.InvokeMember("splitSize",
                     BindingFlags.DeclaredOnly |
                     BindingFlags.Public | BindingFlags.NonPublic |
                     BindingFlags.Instance | BindingFlags.GetField, null, splitter, null);
+                return (float)f;
             }
         }
         public float[] relativeSizes

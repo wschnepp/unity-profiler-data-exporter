@@ -55,7 +55,7 @@ namespace ProfilerDataExporter
                 case EventType.MouseDown:
                     if (Event.current.button == 0 && Event.current.clickCount == 1)
                     {
-                        int num = (!guiSplitterGroup.isVertical) ? ((int)guiSplitterGroup.rect.x) : ((int)guiSplitterGroup.rect.y);
+                        float num = (!guiSplitterGroup.isVertical) ? ((int)guiSplitterGroup.rect.x) : ((int)guiSplitterGroup.rect.y);
                         int num2 = (!guiSplitterGroup.isVertical) ? ((int)Event.current.mousePosition.x) : ((int)Event.current.mousePosition.y);
                         for (int i = 0; i < state.relativeSizes.Length - 1; i++)
                         {
@@ -95,7 +95,7 @@ namespace ProfilerDataExporter
                     break;
                 case EventType.Repaint:
                     {
-                        int num4 = (!guiSplitterGroup.isVertical) ? ((int)guiSplitterGroup.rect.x) : ((int)guiSplitterGroup.rect.y);
+                        float num4 = (!guiSplitterGroup.isVertical) ? ((int)guiSplitterGroup.rect.x) : ((int)guiSplitterGroup.rect.y);
                         for (int j = 0; j < state.relativeSizes.Length - 1; j++)
                         {
                             Rect position = (!guiSplitterGroup.isVertical) ? new Rect(state.xOffset + (float)num4 + (float)state.realSizes[j] - (float)(state.splitSize / 2), guiSplitterGroup.rect.y, (float)state.splitSize, guiSplitterGroup.rect.height) : new Rect(state.xOffset + guiSplitterGroup.rect.x, (float)(num4 + state.realSizes[j] - state.splitSize / 2), guiSplitterGroup.rect.width, (float)state.splitSize);
