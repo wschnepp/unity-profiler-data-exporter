@@ -246,7 +246,7 @@ namespace ProfilerDataExporter
 
         private bool FileOverwriteCheck()
         {
-            return !File.Exists(filePath) || EditorUtility.DisplayDialog("File already exists", "Do you wish to overwrite it?", "Yes", "No")
+            return !File.Exists(filePath) || EditorUtility.DisplayDialog("File already exists", "Do you wish to overwrite it?", "Yes", "No");
         }
 
         private void DrawFilePath()
