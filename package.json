@@ -1,0 +1,17 @@
+{
+  "displayName": "Unity Profiler Data Exporter",
+  "name": "com.wschnepp.unity-profiler-data-exporter",
+  "version": "1.0.0",
+  "unity": "2020.3",
+  "description": "Utility to export data from the unity profiler and provide some useful stats. This is a first working version but I plan to add other features shortly. Anyone who wants to contribute is very welcome, just make a pull request. Forked from https://github.com/steve3003/unity-profiler-data-exporter",
+  "keywords": [
+    "profiler",
+    "export"
+  ],
+  "repository": {
+    "url": "https://github.com/wschnepp/unity-profiler-data-exporter.git",
+    "type": "git"
+  },
+  "dependencies": {
+  }
+}
