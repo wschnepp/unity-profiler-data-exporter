@@ -86,6 +86,8 @@ namespace ProfilerDataExporter
         private TableGUILayout.ITableState functionStatsTableState;
         private StatsType statsType;
         private SortType sortType = SortType.SelfTime;
+
+        private string format = "json";
         private EditorWindow profilerWindow;
 
         [MenuItem("Window/Profiler Data Exporter")]
@@ -112,6 +114,7 @@ namespace ProfilerDataExporter
             scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
 
             //DrawStats();
+            DrawFormatSelection();
             DrawFilePath();
             DrawExportButtons();
 
@@ -187,6 +190,25 @@ namespace ProfilerDataExporter
                 }
             }
         }
+        private void DrawFormatSelection()
+        {
+            GUILayout.Label("Format", EditorStyles.boldLabel);
+            GUILayout.BeginHorizontal();
+
+            string[] formats = new string[] { "json", "csv" };
+            int previousSelectedFormatIndex = format == "json" ? 0 : 1;
+            int newSelectedFormatIndex = EditorGUILayout.Popup("File format", previousSelectedFormatIndex, formats);
+            
+            if(previousSelectedFormatIndex != newSelectedFormatIndex)
+            {
+                format = formats[newSelectedFormatIndex];
+                filePath = $"{ filePath.Substring(0, filePath.LastIndexOf("."))}.{ format}";
+
+            }
+
+            GUI.enabled = true;
+            GUILayout.EndHorizontal();
+        }
 
         private void DrawExportButtons()
         {
@@ -195,22 +217,36 @@ namespace ProfilerDataExporter
 
             if (GUILayout.Button("Profiler Data"))
             {
-                ExportProfilerData();
+                if (FileOverwriteCheck())
+                {
+                    ExportProfilerData();
+                }
             }
             var currentframe = (int)currentFrameFieldInfo.GetValue(profilerWindow);
             GUI.enabled = currentframe > 0;
             if (GUILayout.Button("Current Frame Data"))
             {
-                ExportCurrentFrameData(currentframe);
+                if (FileOverwriteCheck())
+                {
+                    ExportCurrentFrameData(currentframe);
+                }                
             }
             GUI.enabled = true;
             GUI.enabled = !string.IsNullOrEmpty(ProfilerDriver.selectedPropertyPath);
             if (GUILayout.Button("Selected Function Data"))
             {
-                ExportSelectedFunctionData();
+                if (FileOverwriteCheck())
+                {
+                    ExportSelectedFunctionData();
+                }               
             }
             GUI.enabled = true;
             GUILayout.EndHorizontal();
+        }
+
+        private bool FileOverwriteCheck()
+        {
+            return !File.Exists(filePath) || EditorUtility.DisplayDialog("File already exists", "Do you wish to overwrite it?", "Yes", "No")
         }
 
         private void DrawFilePath()
@@ -220,7 +256,7 @@ namespace ProfilerDataExporter
             var currentDirectory = Directory.GetCurrentDirectory();
             var displayedFilePath = Path.GetFullPath(filePath).Replace(currentDirectory, "");
             GUILayout.Label(displayedFilePath, GUILayout.ExpandWidth(false));
-            if (GUILayout.Button("Open", GUILayout.ExpandWidth(false)))
+            if (GUILayout.Button("Open", GUILayout.ExpandWidth(false)) && File.Exists(filePath))
             {
                 Process.Start(filePath);
             }
@@ -228,7 +264,7 @@ namespace ProfilerDataExporter
             {
                 var currentPathDirectory = Path.GetDirectoryName(filePath);
                 var currentName = Path.GetFileNameWithoutExtension(filePath);
-                var newfilePath = EditorUtility.SaveFilePanel("Select file path", currentPathDirectory, currentName, "json");
+                var newfilePath = EditorUtility.SaveFilePanel("Select file path", currentPathDirectory, currentName, format);
                 var isPathValid = !string.IsNullOrEmpty(newfilePath);
                 if (isPathValid)
                 {
@@ -241,9 +277,11 @@ namespace ProfilerDataExporter
 
         private void ExportProfilerData()
         {
+            
+         
             var firstFrameIndex = ProfilerDriver.firstFrameIndex;
             var lastFrameIndex = ProfilerDriver.lastFrameIndex;
-            ExtractData(firstFrameIndex, lastFrameIndex);
+            ExtractData(firstFrameIndex, lastFrameIndex, format:format);
         }
 
         private void ExportCurrentFrameData(int currentframe)
@@ -261,9 +299,10 @@ namespace ProfilerDataExporter
             ExtractData(firstFrameIndex, lastFrameIndex, ProfilerDriver.selectedPropertyPath);
         }
 
-        private void ExtractData(int firstFrameIndex, int lastFrameIndex, string selectedPropertyPath = "")
+        private void ExtractData(int firstFrameIndex, int lastFrameIndex, string selectedPropertyPath = "", string format="json")
         {
             var profilerData = ProfilerData.GetProfilerData(firstFrameIndex, lastFrameIndex, selectedPropertyPath);
+            profilerData.format = format;
             File.WriteAllText(filePath, profilerData.ToString());
             profilerData.Clear();
         }
